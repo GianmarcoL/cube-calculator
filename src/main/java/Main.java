@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class Main {
 
-	public static final int RECURSION_DEPTH = 1;
+	public static final int RECURSION_DEPTH = 4;
 
 	/**
 	 * AVAILABLE MOVES
@@ -56,7 +56,8 @@ public class Main {
 		nextMove(0, (byte) 7);
 		System.out.println(totalMoves);
 		long end = System.nanoTime();
-		System.out.println("It tooks: " + (end - start) + "ns - (" + (end - start) / 100000000 + "s)");
+		System.out.println("It tooks: " + (end - start) + "ns - (" + (end - start) / 1000000000 + "s)");
+		System.out.println("That is something like "+ ((float)(end - start) / totalMoves) / 1000 + "µs per move");
 	}
 
 	private static void initializeCubeSolved() {
@@ -91,36 +92,42 @@ public class Main {
 		}
 		if (previousMove != UP) {
 			for (int i = 0; i < 4; i++) {
+				countMove();
 				up();
 				nextMove(actualDepth + 1, UP);
 			}
 		}
 		if (previousMove != RIGHT) {
 			for (int i = 0; i < 4; i++) {
+				countMove();
 				right();
 				nextMove(actualDepth + 1, RIGHT);
 			}
 		}
 		if (previousMove != FRONT) {
 			for (int i = 0; i < 4; i++) {
-				doMove(FRONT);
+				countMove();
+				front();
 				nextMove(actualDepth + 1, FRONT);
 			}
 		}
 		if (previousMove != LEFT) {
 			for (int i = 0; i < 4; i++) {
-				doMove(LEFT);
+				countMove();
+				left();
 				nextMove(actualDepth + 1, LEFT);
 			}
 		}
 		if (previousMove != BACK) {
 			for (int i = 0; i < 4; i++) {
-				doMove(BACK);
+				countMove();
+				back();
 				nextMove(actualDepth + 1, BACK);
 			}
 		}
 		if (previousMove != DOWN) {
 			for (int i = 0; i < 4; i++) {
+				countMove();
 				down();
 				nextMove(actualDepth + 1, DOWN);
 			}
@@ -144,41 +151,142 @@ public class Main {
 	}
 
 	private static void right() {
-		byte[] rightFaceCorners = { topCorners[0], topCorners[3], downCorners[3], downCorners[0] };
-		byte[] rightFaceCornersOrientations = { topCornersOrientations[0], topCornersOrientations[3], downCornersOrientations[3], downCornersOrientations[0] };
+		byte[] rightCorners = { topCorners[0], topCorners[3], downCorners[3], downCorners[0] };
+		byte[] rightCornersOrientations = { topCornersOrientations[0], topCornersOrientations[3], downCornersOrientations[3], downCornersOrientations[0] };
 
-		short[] rightFaceEdges = { topEdges[3], middleEdges[3], downEdges[3], middleEdges[0] };
-		byte[] rightFaceEdgesOrientations = { topEdgesOrientations[3], middleEdgesOrientations[3], downEdgesOrientations[3], middleEdgesOrientations[0] };
+		short[] rightEdges = { topEdges[3], middleEdges[3], downEdges[3], middleEdges[0] };
+		byte[] rightEdgesOrientations = { topEdgesOrientations[3], middleEdgesOrientations[3], downEdgesOrientations[3], middleEdgesOrientations[0] };
 
-		rotate(rightFaceCorners, 1);
-		rotate(rightFaceCornersOrientations, 1);
-		rotate(rightFaceEdges, 1);
-		rotate(rightFaceEdgesOrientations, 1);
+		rotate(rightCorners, 1);
+		rotate(rightCornersOrientations, 1);
+		rotate(rightEdges, 1);
+		rotate(rightEdgesOrientations, 1);
 
-		topCorners[0] = rightFaceCorners[0];
-		topCorners[3] = rightFaceCorners[1];
-		downCorners[3] = rightFaceCorners[2];
-		downCorners[0] = rightFaceCorners[3];
-		topCornersOrientations[0] = (byte) ((rightFaceCornersOrientations[0] + 2) % 3);
-		topCornersOrientations[3] = (byte) ((rightFaceCornersOrientations[1] + 1) % 3);
-		downCornersOrientations[3] = (byte) ((rightFaceCornersOrientations[2] + 2) % 3);
-		downCornersOrientations[0] = (byte) ((rightFaceCornersOrientations[3] + 1) % 3);
+		topCorners[0] = rightCorners[0];
+		topCorners[3] = rightCorners[1];
+		downCorners[3] = rightCorners[2];
+		downCorners[0] = rightCorners[3];
+		topCornersOrientations[0] = (byte) ((rightCornersOrientations[0] + 2) % 3);
+		topCornersOrientations[3] = (byte) ((rightCornersOrientations[1] + 1) % 3);
+		downCornersOrientations[3] = (byte) ((rightCornersOrientations[2] + 2) % 3);
+		downCornersOrientations[0] = (byte) ((rightCornersOrientations[3] + 1) % 3);
 
-		topEdges[3] = rightFaceEdges[0];
-		middleEdges[3] = rightFaceEdges[1];
-		downEdges[3] = rightFaceEdges[2];
-		middleEdges[0] = rightFaceEdges[3];
-		//this down is not working
-		topEdgesOrientations[3] = (byte) ((rightFaceEdgesOrientations[0] + 1) % 2);
-		middleEdgesOrientations[3] = (byte) ((rightFaceEdgesOrientations[1] + 1) % 2);
-		downEdgesOrientations[3] = (byte) ((rightFaceEdgesOrientations[2] + 1) % 2);
-		middleEdgesOrientations[0] = (byte) ((rightFaceEdgesOrientations[3] + 1) % 2);
+		topEdges[3] = rightEdges[0];
+		middleEdges[3] = rightEdges[1];
+		downEdges[3] = rightEdges[2];
+		middleEdges[0] = rightEdges[3];
+		topEdgesOrientations[3] = (byte) ((rightEdgesOrientations[0] + 1) % 2);
+		middleEdgesOrientations[3] = (byte) ((rightEdgesOrientations[1] + 1) % 2);
+		downEdgesOrientations[3] = (byte) ((rightEdgesOrientations[2] + 1) % 2);
+		middleEdgesOrientations[0] = (byte) ((rightEdgesOrientations[3] + 1) % 2);
 
 		printCubeStatus("RIGHT");
 
 	}
 
-	private static void doMove(byte move) {
+	private static void left() {
+		byte[] leftCorners = { topCorners[2], topCorners[1], downCorners[1], downCorners[2] };
+		byte[] leftCornersOrientations = { topCornersOrientations[2], topCornersOrientations[1], downCornersOrientations[1], downCornersOrientations[2] };
+
+		short[] leftEdges = { topEdges[1], middleEdges[1], downEdges[1], middleEdges[2] };
+		byte[] leftEdgesOrientations = { topEdgesOrientations[1], middleEdgesOrientations[1], downEdgesOrientations[1], middleEdgesOrientations[2] };
+
+		rotate(leftCorners, 1);
+		rotate(leftCornersOrientations, 1);
+		rotate(leftEdges, 1);
+		rotate(leftEdgesOrientations, 1);
+
+		topCorners[2] = leftCorners[0];
+		topCorners[1] = leftCorners[1];
+		downCorners[1] = leftCorners[2];
+		downCorners[2] = leftCorners[3];
+		topCornersOrientations[2] = (byte) ((leftCornersOrientations[0] + 2) % 3);
+		topCornersOrientations[1] = (byte) ((leftCornersOrientations[1] + 1) % 3);
+		downCornersOrientations[1] = (byte) ((leftCornersOrientations[2] + 2) % 3);
+		downCornersOrientations[2] = (byte) ((leftCornersOrientations[3] + 1) % 3);
+
+		topEdges[1] = leftEdges[0];
+		middleEdges[1] = leftEdges[1];
+		downEdges[1] = leftEdges[2];
+		middleEdges[2] = leftEdges[3];
+		topEdgesOrientations[1] = (byte) ((leftEdgesOrientations[0] + 1) % 2);
+		middleEdgesOrientations[1] = (byte) ((leftEdgesOrientations[1] + 1) % 2);
+		downEdgesOrientations[1] = (byte) ((leftEdgesOrientations[2] + 1) % 2);
+		middleEdgesOrientations[2] = (byte) ((leftEdgesOrientations[3] + 1) % 2);
+
+		printCubeStatus("LEFT");
+
+	}
+
+	private static void front() {
+		byte[] frontCorners = { topCorners[1], topCorners[0], downCorners[0], downCorners[1] };
+		byte[] frontCornersOrientations = { topCornersOrientations[1], topCornersOrientations[0], downCornersOrientations[0], downCornersOrientations[1] };
+
+		short[] frontEdges = { topEdges[0], middleEdges[0], downEdges[0], middleEdges[1] };
+		byte[] frontEdgesOrientations = { topEdgesOrientations[0], middleEdgesOrientations[0], downEdgesOrientations[0], middleEdgesOrientations[1] };
+
+		rotate(frontCorners, 1);
+		rotate(frontCornersOrientations, 1);
+		rotate(frontEdges, 1);
+		rotate(frontEdgesOrientations, 1);
+
+		topCorners[1] = frontCorners[0];
+		topCorners[0] = frontCorners[1];
+		downCorners[0] = frontCorners[2];
+		downCorners[1] = frontCorners[3];
+		topCornersOrientations[1] = (byte) ((frontCornersOrientations[0] + 2) % 3);
+		topCornersOrientations[0] = (byte) ((frontCornersOrientations[1] + 1) % 3);
+		downCornersOrientations[0] = (byte) ((frontCornersOrientations[2] + 2) % 3);
+		downCornersOrientations[1] = (byte) ((frontCornersOrientations[3] + 1) % 3);
+
+		topEdges[0] = frontEdges[0];
+		middleEdges[0] = frontEdges[1];
+		downEdges[0] = frontEdges[2];
+		middleEdges[1] = frontEdges[3];
+		topEdgesOrientations[0] = (byte) ((frontEdgesOrientations[0] + 2) % 2);
+		middleEdgesOrientations[0] = (byte) ((frontEdgesOrientations[1] + 2) % 2);
+		downEdgesOrientations[0] = (byte) ((frontEdgesOrientations[2] + 2) % 2);
+		middleEdgesOrientations[1] = (byte) ((frontEdgesOrientations[3] + 2) % 2);
+
+		printCubeStatus("FRONT");
+
+	}
+
+	private static void back() {
+		byte[] backCorners = { topCorners[3], topCorners[2], downCorners[2], downCorners[3] };
+		byte[] backCornersOrientations = { topCornersOrientations[3], topCornersOrientations[2], downCornersOrientations[2], downCornersOrientations[3] };
+
+		short[] backEdges = { topEdges[2], middleEdges[2], downEdges[2], middleEdges[3] };
+		byte[] backEdgesOrientations = { topEdgesOrientations[2], middleEdgesOrientations[2], downEdgesOrientations[2], middleEdgesOrientations[3] };
+
+		rotate(backCorners, 1);
+		rotate(backCornersOrientations, 1);
+		rotate(backEdges, 1);
+		rotate(backEdgesOrientations, 1);
+
+		topCorners[3] = backCorners[0];
+		topCorners[2] = backCorners[1];
+		downCorners[2] = backCorners[2];
+		downCorners[3] = backCorners[3];
+		topCornersOrientations[3] = (byte) ((backCornersOrientations[0] + 2) % 3);
+		topCornersOrientations[2] = (byte) ((backCornersOrientations[1] + 1) % 3);
+		downCornersOrientations[2] = (byte) ((backCornersOrientations[2] + 2) % 3);
+		downCornersOrientations[3] = (byte) ((backCornersOrientations[3] + 1) % 3);
+
+		topEdges[2] = backEdges[0];
+		middleEdges[2] = backEdges[1];
+		downEdges[2] = backEdges[2];
+		middleEdges[3] = backEdges[3];
+		topEdgesOrientations[2] = (byte) ((backEdgesOrientations[0] + 2) % 2);
+		middleEdgesOrientations[2] = (byte) ((backEdgesOrientations[1] + 2) % 2);
+		downEdgesOrientations[2] = (byte) ((backEdgesOrientations[2] + 2) % 2);
+		middleEdgesOrientations[3] = (byte) ((backEdgesOrientations[3] + 2) % 2);
+
+		printCubeStatus("BACK");
+
+	}
+
+	private static void countMove() {
 		totalMoves++;
 	}
 
